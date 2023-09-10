@@ -8,9 +8,9 @@ let concat str1 str2 =
 
   let result = string_init result_len (fun i ->
     if i < len1 then
-      str1.[i]
+      string_get(str1,i)
     else
-      str2.[i - len1]
+      string_get(str2,i-len1 )
   ) in
 
   result
