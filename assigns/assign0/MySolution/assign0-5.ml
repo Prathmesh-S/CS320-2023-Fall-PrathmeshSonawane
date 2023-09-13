@@ -1,4 +1,4 @@
-(* Changed Must support all int, including 0 and negative *)
+(* New Must support all int, including 0 and negative *)
 #use "../assign0.ml";;
 
 let stringrev(cs: string): string = 
