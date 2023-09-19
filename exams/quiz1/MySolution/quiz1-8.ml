@@ -18,6 +18,11 @@
 
 let sort5: int*int*int*int*int -> int*int*int*int*int =
   (* YOUR CODE *)
-
+  if (int1<=int2<=int3<=int4<=int5) 
+    then (int1, int2, int3, int4, int5)
+  else 
+    (int1, int2, int3, int4, int5)
+  ;;
+    (* I was not sue how to access arguments. Additionally, I could only find a recursive way to do this solution. As I could not find the right answer, my else has a random return *)
 
 (* ************************************************ *)
