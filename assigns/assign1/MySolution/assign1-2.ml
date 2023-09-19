@@ -1,5 +1,5 @@
 (* ****** ****** *)
-#use "./../../../classlib/OCaml/MyOcaml.ml";;
+#use "./../../../classlib/OCaml/MyOCaml.ml";;
 
 let
 string_append

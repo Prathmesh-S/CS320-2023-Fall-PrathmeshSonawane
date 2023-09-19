@@ -1,5 +1,5 @@
 (* ****** ****** *)
-#use "./../../../classlib/OCaml/MyOcaml.ml";;
+#use "./../../../classlib/OCaml/MyOCaml.ml";;
 
 let rec second (x:string) (a:int) (b:int) (c:int):bool = 
   if ((b = (string_length(x)-1)) || (c >= (string_length(x))))

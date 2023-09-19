@@ -1,5 +1,5 @@
 (* ****** ****** *)
-#use "./../../../classlib/OCaml/MyOcaml.ml";;
+#use "./../../../classlib/OCaml/MyOCaml.ml";;
 
   let concat str1 str2 =
     let len1 = string_length str1 in
