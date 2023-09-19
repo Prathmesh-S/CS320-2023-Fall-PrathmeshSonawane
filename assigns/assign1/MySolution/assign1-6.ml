@@ -44,5 +44,5 @@ else
         if ((first (cs)(a)(b)(c)(d)) = true)
           then false 
         else 
-          string_avoid_132(string_tail(cs))
+          string_avoid_1324(string_tail(cs))
 ;;
