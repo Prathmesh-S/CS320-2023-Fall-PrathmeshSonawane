@@ -2,6 +2,7 @@
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
 
 let rec second (x:string) (a:int) (b:int) (c:int):bool = 
+  let () = Printf.printf "%s:   %i    %i    %i  \n" x a b c in
   if ((b = (string_length(x)-1)) || (c >= (string_length(x))))
     then false 
   else 
@@ -19,7 +20,7 @@ let rec first (x:string) (a:int) (b:int) (c:int):bool =
     if (second (x)(a)(b)(c) = true)
       then true 
     else
-      (second (x)(a)(b+1)(c) = true)
+      (first (x)(a)(b+1)(c+1) = true)
 ;;
 
 
