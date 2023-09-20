@@ -1,8 +1,9 @@
 (* ****** ****** *)
+(* ****** ****** *)
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
 
 let rec third (x:string) (a:int) (b:int) (c:int) (d:int):bool = 
-  if ((b = (string_length(x)-2)) || (c >= (string_length(x)-1)) || (d = (string_length(x))))
+  if ((b = (string_length(x)-2))|| (c = (string_length(x)-1)) || (d >= (string_length(x))))
     then false 
   else 
     if ((ord(string_get_at (x) (a)) < ord(string_get_at (x) (c))) && (ord (string_get_at (x) (c)) < ord(string_get_at (x) (b))) && (ord (string_get_at (x) (b)) < ord(string_get_at (x) (d))))
@@ -12,7 +13,7 @@ let rec third (x:string) (a:int) (b:int) (c:int) (d:int):bool =
 ;;
 
 let rec second (x:string) (a:int) (b:int) (c:int) (d:int):bool = 
-  if ((b = (string_length(x)-2)) || (c >= (string_length(x)-1)) || (d = (string_length(x))))
+  if ((b = (string_length(x)-2))|| (c = (string_length(x)-1)) || (d >= (string_length(x))))
     then false 
   else 
     if (third (x)(a)(b)(c)(d) = true)
@@ -23,7 +24,7 @@ let rec second (x:string) (a:int) (b:int) (c:int) (d:int):bool =
 
 
 let rec first (x:string) (a:int) (b:int) (c:int) (d:int):bool = 
-  if ((b = (string_length(x)-2)) || (c >= (string_length(x)-1)) || (d = (string_length(x))))
+  if ((b = (string_length(x)-2))|| (c = (string_length(x)-1)) || (d >= (string_length(x))))
     then false 
   else 
     if (second (x)(a)(b)(c)(d) = true)
