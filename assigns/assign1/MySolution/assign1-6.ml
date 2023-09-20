@@ -2,14 +2,15 @@
 (* ****** ****** *)
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
 
-let rec third (x:string) (a:int) (b:int) (c:int) (d:int):bool = 
-  if ((b = (string_length(x)-2))|| (c = (string_length(x)-1)) || (d >= (string_length(x))))
+let rec third (theString:string) (w:int) (x:int) (y:int) (z:int):bool = 
+  let () = Printf.printf "%s:   %i    %i    %i    %i \n" theString w x y z in
+  if ((x = (string_length(theString)-2))|| (y = (string_length(theString)-1)) || (z >= (string_length(theString))))
     then false 
   else 
-    if ((ord(string_get_at (x) (a)) < ord(string_get_at (x) (c))) && (ord (string_get_at (x) (c)) < ord(string_get_at (x) (b))) && (ord (string_get_at (x) (b)) < ord(string_get_at (x) (d))))
+    if ((ord(string_get_at (theString) (w)) < ord(string_get_at (theString) (y))) && (ord (string_get_at (theString) (y)) < ord(string_get_at (theString) (x))) && (ord (string_get_at (theString) (x)) < ord(string_get_at (theString) (z))))
       then true 
     else  
-      third (x) (a) (b) (c) (d+1)
+      third (theString) (w) (x) (y) (z+1)
 ;;
 
 let rec second (x:string) (a:int) (b:int) (c:int) (d:int):bool = 
@@ -19,7 +20,7 @@ let rec second (x:string) (a:int) (b:int) (c:int) (d:int):bool =
     if (third (x)(a)(b)(c)(d) = true)
       then true 
     else
-      (third (x)(a)(b)(c+1)(d) = true)
+      (second (x)(a)(b)(c+1)(d+1) = true)
 ;;
 
 
@@ -30,7 +31,7 @@ let rec first (x:string) (a:int) (b:int) (c:int) (d:int):bool =
     if (second (x)(a)(b)(c)(d) = true)
       then true 
     else
-      (second (x)(a)(b+1)(c)(d) = true)
+      (first (x)(a)(b+1)(c+1)(d+1) = true)
 ;;
 
 
