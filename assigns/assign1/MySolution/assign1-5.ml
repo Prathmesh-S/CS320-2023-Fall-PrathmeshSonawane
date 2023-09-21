@@ -10,7 +10,7 @@ else
     then 
       let including =  largest(whole)(string_snoc(sub)(string_get_at(whole)(index)))(index+1) in
           let excluding = largest(whole)(sub)(index+1) in
-          if (string_length (including) > string_length (excluding)) then
+          if (string_length (including) >= string_length (excluding)) then
           including
           else 
           excluding
@@ -19,12 +19,12 @@ else
       then
         let including =  largest(whole)(string_snoc(sub)(string_get_at(whole)(index)))(index+1) in
           let excluding = largest(whole)(sub)(index+1) in
-          if (string_length (including) > string_length (excluding)) then
+          if (string_length (including) >= string_length(excluding)) then
           including
           else 
           excluding
       else
-        ""
+        largest(whole)(sub)(index+1)
 ;;
 
 let string_longest_ascend(xs: string): string = 
