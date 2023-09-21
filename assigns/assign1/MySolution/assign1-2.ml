@@ -8,6 +8,8 @@ string_append
 string_make_fwork
 (fun work ->
  (string_foreach(cs1)(work); string_foreach(cs2)(work)))
+;;
+
 
 let rec combine (x:string) (y:string) (final:string):string = 
   if (string_length (x) <1) 

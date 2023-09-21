@@ -3,7 +3,6 @@
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
 
 let rec third (theString:string) (w:int) (x:int) (y:int) (z:int):bool = 
-  let () = Printf.printf "%s:   %i    %i    %i    %i \n" theString w x y z in
   if ((x = (string_length(theString)-2))|| (y = (string_length(theString)-1)) || (z >= (string_length(theString))))
     then false 
   else 

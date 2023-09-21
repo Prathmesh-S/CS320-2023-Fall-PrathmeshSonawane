@@ -34,7 +34,6 @@ let rec int_add (ds1: string)(ds2: string) (counter:int)(answer: string): string
           int_add(stringHeader(ds1))(ds2)(newCount / 10)((string_cons(char_of_digit(newCount mod 10))(answer)))
         else 
         let newCount = (counter + (ord(string_get_at (ds1) (string_length (ds1)-1))-48) + (ord(string_get_at (ds2) (string_length (ds2)-1))-48)) in
-        let () = Printf.printf "%i:  %s   %s \n" newCount ds1 ds2 in
         int_add(stringHeader(ds1))(stringHeader(ds2))(newCount / 10)((string_cons(char_of_digit(newCount mod 10))(answer)))
 ;;
 
