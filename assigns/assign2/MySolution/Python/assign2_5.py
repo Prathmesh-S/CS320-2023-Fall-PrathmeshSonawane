@@ -10,7 +10,7 @@ def fnlist_make_fwork(func):
 
     def work(x0):
         nonlocal newList 
-        newList =  fnlist_cons(1, x0, newList)
+        newList =  fnlist_cons(1, newList, x0)
     func(work)
     newList= fnlist_reverse(newList)
     return(newList)
