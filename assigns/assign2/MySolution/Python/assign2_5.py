@@ -13,5 +13,3 @@ def fnlist_make_fwork(func):
     work(func)
 
     return(newList)
-
-print(fnlist_make_fwork(lambda work: work(0)).cons) 
