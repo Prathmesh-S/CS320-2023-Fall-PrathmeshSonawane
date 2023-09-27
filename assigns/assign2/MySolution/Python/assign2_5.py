@@ -11,5 +11,5 @@ def fnlist_make_fwork(func):
     def work(node):
         newNode = fnlist_cons(x0, newList)
     work(func)
-
+    newList = fnlist_reverse(newList)
     return(newList)
