@@ -8,9 +8,9 @@ from MyPython import *
 def fnlist_make_fwork(func):
     newList = fnlist_nil()
 
-    def work(node):
+    def work(x0):
         nonlocal newList 
         newList =  fnlist_cons(1, x0, newList)
-    work(funct)
+    func(work)
     newList= fnlist_reverse(newList)
     return(newList)
