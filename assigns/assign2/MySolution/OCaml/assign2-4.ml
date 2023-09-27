@@ -24,7 +24,7 @@ let string_sepjoin_list
 
 finalString(string_length (sep))(
 let oldString = list_foldleft(xs)("")(fun acc i -> 
-    string_append(string_append(sep)(i))(acc)
+    string_append(string_append(string_reverse(sep))(i))(acc)
 )
 
 in string_reverse(oldString)
