@@ -19,7 +19,7 @@ def string_make_fwork(x,y,len1,len2):
             return x[0] + foreach(string_get_at(x,1,string_len(x)),y,len1-1,len2)
         else:
             return y[0] + foreach(x,string_get_at(y,1,string_len(y)),len1,len2-1)  
-    return (foreach())
+    return (foreach(x,y,len1,len2))
     
     
 
