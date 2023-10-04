@@ -4,11 +4,8 @@
 
 let list_map = fun xs -> foreach_to_map_list(list_foreach)(xs);;
 
-let rec list_length(xs: 'a list): int =
-  match xs with 
-  |[] -> 0
-  |a::b -> 1 + list_length(b)
-  
+let list_length(xs: 'a list):int = 
+  list_foldright (xs) (0) (fun i acc -> acc+1)
 ;;
 
 let list_subsets (xs: 'a list): 'a list list =
