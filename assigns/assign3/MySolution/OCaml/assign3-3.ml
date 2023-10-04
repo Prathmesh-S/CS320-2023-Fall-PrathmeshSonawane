@@ -1,4 +1,3 @@
-(* ****** ****** *)
 #use "./../../../../classlib/OCaml/MyOCaml.ml";;
 #use "../../assign3.ml";;
 
@@ -20,7 +19,7 @@ let getTails(xss: 'a list list):  'a list list =
 ;;
 
 
-let list_nchoose (xs: 'a list)(n0: int): 'a list list =
-  let list_of_lists = list_subsets(xs) in 
-    getTails (list_foldright (list_of_lists) ([[]]) (fun i acc -> if (list_length(i) <=n0) then i::acc else acc))
-;;
+let list_nchoose (xs: 'a list)(n0: int): 'a list list = 
+let subsets = list_subsets(xs) in
+  list_foldleft(subsets)([])(fun acc i -> 
+    if list_length i = n0 then list_append(acc)([i]) else acc)
