@@ -18,6 +18,11 @@ let element (xs: 'a list) : 'a =
   |a::_ -> a
 ;;
 
+let list_reverse(xs: 'a list): 'a list = 
+let folder x acc = list_foldright acc (x :: []) (fun i acc -> i :: acc) in
+    list_foldright xs [] folder
+  ;;
+
 
 let list_last(xs: 'a list): 'a = 
   match xs with 
