@@ -33,53 +33,54 @@ class mylist_cons(mylist):
 def mylist_sing(itm):
     return mylist_cons(itm, mylist_nil())
 
-def mylist_reverse(lst):
-    if (lst.get_id_tag()==0):
-        return mylist_nil()
-    else:
-        return mylist_snoc(mylist_reverse(lst.get_itm2()), lst.get_itm1())
-
-def mylist_snoc(lst, itm):
-    if (lst.get_id_tag()==0):
-        return mylist_sing(itm)
-    else:
-        return mylist_cons(lst.get_itm1(), mylist_snoc(lst.get_itm2(), itm))
-
-def mylist_print(lst):
-    if (lst.get_id_tag()==0):
+def mylist_print(theList):
+    if (theList.get_id_tag()==0):
         print("[]")
     else:
         print("[", end="")
-        mylist_print_aux(lst)
+        mylist_print_entire_list(theList)
         print("]")
 
-def mylist_print_aux(lst):
-    if (lst.get_id_tag()==0):
-        return None
-    elif (lst.get_itm2().get_id_tag()==0):
-        print(lst.get_itm1(), end="")
+def mylist_reverse(theList):
+    if (theList.get_id_tag()==0):
+        return mylist_nil()
     else:
-        print(lst.get_itm1(), end=", ")
-        mylist_print_aux(lst.get_itm2())
+        return mylist_snoc(mylist_reverse(theList.get_itm2()), theList.get_itm1())
 
-def mylist_append2(lst1, lst2):
-    if (lst1.get_id_tag()==0):
-        return lst2
+
+def mylist_snoc(theList, itm):
+    if (theList.get_id_tag()==0):
+        return mylist_sing(itm)
     else:
-        return mylist_cons(lst1.get_itm1(), mylist_append2(lst1.get_itm2(), lst2))
+        return mylist_cons(theList.get_itm1(), mylist_snoc(theList.get_itm2(), itm))
+
+def mylist_print_entire_list(theList):
+    if (theList.get_id_tag()==0):
+        return None
+    elif (theList.get_itm2().get_id_tag()==0):
+        print(theList.get_itm1(), end="")
+    else:
+        print(theList.get_itm1(), end=", ")
+        mylist_print_entire_list(theList.get_itm2())
+
+def mylist_append2(theList1, theList2):
+    if (theList1.get_id_tag()==0):
+        return theList2
+    else:
+        return mylist_cons(theList1.get_itm1(), mylist_append2(theList1.get_itm2(), theList2))
     
-## Work Functions 
+# Work Functions 
 
-def mylist_foreach(lst, work_func):
-    if (lst.get_id_tag()==0):
+def mylist_foreach(theList, work_func):
+    if (theList.get_id_tag()==0):
         return None
     else:
-        work_func(lst.get_itm1())
-        mylist_foreach(lst.get_itm2(), work_func)
+        work_func(theList.get_itm1())
+        mylist_foreach(theList.get_itm2(), work_func)
 
-def mylist_rforeach(lst, work_func):
-    if (lst.get_id_tag()==0):
+def mylist_rforeach(theList, work_func):
+    if (theList.get_id_tag()==0):
         return None
     else:
-        mylist_rforeach(lst.get_itm2(), work_func)
-        work_func(lst.get_itm1())
+        mylist_rforeach(theList.get_itm2(), work_func)
+        work_func(theList.get_itm1())
