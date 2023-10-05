@@ -11,4 +11,16 @@ is empty, raise the Empty exception
 (* ************************************************ *)
 
 exception Empty
-let list_last(xs: 'a list): 'a = ....
+
+let element (xs: 'a list) : 'a = 
+  match xs with
+  |[] -> raise Empty 
+  |a::_ -> a
+;;
+
+
+let list_last(xs: 'a list): 'a = 
+  match xs with 
+  |[] -> raise Empty 
+  |_ -> element (list_foldright(xs) ([]) (fun x acc -> if acc = [] then x::acc else acc))
+;;
