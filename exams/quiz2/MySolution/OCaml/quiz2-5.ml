@@ -9,6 +9,7 @@ is empty, raise the Empty exception
 *)
 
 (* ************************************************ *)
+#use "./../../../../classlib/OCaml/MyOCaml.ml";;
 
 exception Empty
 
