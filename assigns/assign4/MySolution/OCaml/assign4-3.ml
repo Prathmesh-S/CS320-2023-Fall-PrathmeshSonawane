@@ -1,6 +1,6 @@
 (* ****** 
    
-  let rec gtree_streamize_bfs (xs: 'a gtree): 'a stream =
+
 ****** *)
 #use "./../../../../classlib/OCaml/MyOCaml.ml";;
 #use "../../assign4.ml";;
@@ -25,5 +25,42 @@ let rec gtree_streamize_dfs (xs: 'a gtree): 'a stream =
     in
     fun () -> StrCons(a, fun () -> concat_streams (list_map gtree_streamize_dfs b) ())
   ;;
+
+
+  (* ****** 
+Taken fron Piazza
+****** *)
+let fchildren
+(x0: 'a gtree): 'a gtree list =
+match x0 with
+| GTnil -> [] | GTcons(_, xs) -> xs
+;;
+
+(* ****** 
+Taken fron Lecture Notes
+****** *)
+let rec gtree_bfs( nxs: 'node list)( fchildren : 'node -> 'node list): 'node stream = fun() ->
+(
+match nxs with
+|  [] -> StrNil
+| nx1 :: nxs ->
+  StrCons(nx1, gtree_bfs(nxs @ fchildren(nx1))(fchildren))
+)
+;;
+
+let rec helperFunc(theStream) = fun () ->
+  match theStream() with
+  | StrNil -> StrNil
+  | StrCons(a, b) -> 
+    match a with
+    | GTnil -> helperFunc(b)()
+    | GTcons(c, gxs) -> StrCons(c, helperFunc(b))
+;;
+
+
+let rec gtree_streamize_bfs(xs: 'a gtree): 'a stream =
+  fun() -> helperFunc(gtree_bfs([xs])(fchildren))()
+;;
+    
 
 
