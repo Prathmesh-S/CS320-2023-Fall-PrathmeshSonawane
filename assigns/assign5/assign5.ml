@@ -1,6 +1,6 @@
-#use "./../../../../classlib/OCaml/MyOCaml.ml";;
+#use "./../../classlib/OCaml/MyOCaml.ml";;
 (*
-
+#use "./../../../../classlib/OCaml/MyOCaml.ml";;
 Grammar (<expr> is the start symbol)
 
 <digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
@@ -46,4 +46,17 @@ let rec trim cs =
    parse "((mul 1 2)" = None
 
 *)
-let parse (s : string) : expr option = (* YOUR CODE *)
+
+let parse_digit (x:char) : expr option =
+  let t = int_of_char x - 48 in
+  if (0 <= t) && (t <= 9) then Some (Int t) else None 
+;;
+
+let parse_expr (x:char): expr option = 
+  None
+;;
+
+let parse (s : string) : expr option = 
+  parse_expr (string_listize (s))
+;;
+
