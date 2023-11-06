@@ -57,12 +57,10 @@ let rec parse_num (cs) =
   | [] -> None
   | _ -> (
     match cs with
-    | a::b -> parse_digit(a)::pare
+    | a::b -> parse_digit(a)
+    | _ -> None
   )
   ;;
-
-let parse_term (x:char): expr option = 
-  match x with
 
 
 let parse_expr (x:char list): expr option = 
