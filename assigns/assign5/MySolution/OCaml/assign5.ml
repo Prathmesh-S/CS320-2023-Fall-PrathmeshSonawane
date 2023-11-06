@@ -17,12 +17,6 @@ type expr =
   | Add of expr list (* (add e1 e2 ...) *)
   | Mul of expr list (* (mul e1 e2 ...) *)
 
-type key = 
-  | ( 
-  | )
-  | a 
-  | m
-;;
 (* turn a string into a list of chars *)
 let string_listize (s : string) : char list =
   list_make_fwork(fun work -> string_foreach s work)
