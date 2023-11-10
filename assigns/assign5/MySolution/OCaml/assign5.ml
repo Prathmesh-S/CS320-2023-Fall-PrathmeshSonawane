@@ -99,4 +99,12 @@ let parse_expr (x:char list): expr option =
 
 let parse (s : string) : expr option = 
   parse_expr(string_listize (s))
+<<<<<<< HEAD
 ;;
+=======
+;;
+
+let parse (s : string) : expr option = 
+  parse_expr(string_listize (s))
+;;
+>>>>>>> 033e332d3c0848111d4da0f87ddfc779b273598f
