@@ -12,6 +12,26 @@ Grammar (<expr> is the start symbol)
 
 *)
 
+(*
+
+let rec parse_digit cs =
+  match cs with
+  | [] -> None
+  | '0' :: cs' -> Some (0, cs')
+  | '1' :: cs' -> Some (1, cs')
+  | '2' :: cs' -> Some (2, cs')
+  | '3' :: cs' -> Some (3, cs')
+  | '4' :: cs' -> Some (4, cs')
+  | '5' :: cs' -> Some (5, cs')
+  | '6' :: cs' -> Some (6, cs')
+  | '7' :: cs' -> Some (7, cs')
+  | '8' :: cs' -> Some (8, cs')
+  | '9' :: cs' -> Some (9, cs')
+  | _ -> None
+
+*)
+
+
 type expr =
   | Int of int       (* 1, 2, 3, 4 ...  *)
   | Add of expr list (* (add e1 e2 ...) *)
@@ -52,10 +72,31 @@ let parse_digit (x:char) : expr option =
   if (0 <= t) && (t <= 9) then Some (Int t) else None 
 ;;
 
-let parse_expr (x:char): expr option = 
-  None
+let rec parse_num (cs) =
+  match trim cs with
+  | [] -> None
+  | _ -> (
+    match cs with
+    | a::b -> parse_digit(a)
+    | _ -> None
+  )
+  ;;
+
+
+
+let parse_expr (x:char list): expr option = 
+  match x with
+  | x::y::z::[] -> ( match parse_digit x with
+                  |Some a -> (match parse_digit z with
+                             |Some c -> (match y with
+                                        |'(' -> Some (Int 1)
+                                        |')' -> Some (Int 3)
+                                        | _ -> None)
+                             |  _ -> None)
+                  | _ -> None)                           
+  |_ -> None
 ;;
 
 let parse (s : string) : expr option = 
-  None
+  parse_expr(string_listize (s))
 ;;
