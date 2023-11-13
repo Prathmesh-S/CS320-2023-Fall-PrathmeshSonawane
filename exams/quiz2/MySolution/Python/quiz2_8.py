@@ -19,5 +19,6 @@
 #
 # *)
 
-def foreach_to_get_at(foreach): # your implementation below
+def foreach_to_get_at(foreach): 
+   return ((lambda x: foreach(x)))
 

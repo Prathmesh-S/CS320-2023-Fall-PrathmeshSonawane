@@ -9,6 +9,23 @@ is empty, raise the Empty exception
 *)
 
 (* ************************************************ *)
+#use "./../../../../classlib/OCaml/MyOCaml.ml";;
 
 exception Empty
-let list_last(xs: 'a list): 'a = ....
+
+let element (xs: 'a list) : 'a = 
+  match xs with
+  |[] -> raise Empty 
+  |a::_ -> a
+;;
+
+let list_reverse(xs: 'a list): 'a list = 
+let folder x acc = list_foldright acc (x :: []) (fun i acc -> i :: acc) in
+    list_foldright xs [] folder
+  ;;
+
+let list_last(xs: 'a list): 'a = 
+  match xs with 
+  |[] -> raise Empty 
+  |_ -> element (list_foldright(xs) ([]) (fun x acc -> if acc = [] then x::acc else acc))
+;;

@@ -16,5 +16,9 @@ match xs with
 *)
 
 (* ************************************************ *)
+#use "./../../../../classlib/OCaml/MyOCaml.ml";;
 
-let list_append(xs: 'a list): 'a list = ....
+
+let list_append(xs: 'a list) (ys: 'a list): 'a list = 
+  list_foldleft (xs) (ys) (fun acc i -> i::acc)
+;;
