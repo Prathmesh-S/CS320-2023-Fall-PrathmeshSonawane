@@ -52,9 +52,175 @@ let constFun: const parser =
 integer<|>boolean<|>unitparse
 ;;
 
-
-
-
-let interp (s : string) : string list option = 
-None
+let rec comParse () =
+   (let* _ = ws in
+    let* _ = keyword "Push" in
+    let* _ = ws in
+    let* x = constFun in
+    let* _ = ws in
+    pure (Push x))
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Pop" in
+     pure (Pop)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Trace" in
+     pure (Trace)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Add" in
+     pure (Add)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Sub" in
+     pure (Sub)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Mul" in
+     pure (Mul)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Div" in
+     pure (Div)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "And" in
+     pure (And)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Or" in
+     pure (Or)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Not" in
+     pure (Not)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Lt" in
+     pure (Lt)
+   )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Gt" in
+     pure (Gt)
+   )
 ;;
+
+let rec comsParse () = 
+   (let* _ = ws in
+   let* command = comParse () in
+   (
+   let* _ = ws in
+   let* _ = char ';' in
+   let* _ = ws in
+   let* rest = comsParse () in
+   pure (Sequence (command, rest)))
+  <|> 
+   pure (Sequence (command, Empty)))
+   <|>
+   (
+      let* _ = ws in
+      let* _ = keyword "" in
+      pure Empty
+   )
+
+(*
+let interp (s : string) : string list option = 
+   match string_parse (comsParse()) s with
+   | Some (e, []) -> Some e
+   | _ -> None
+;;
+*)
+
+let parser (s : string) : coms option =
+   match string_parse (comsParse()) s with
+  | Some (e, []) -> Some e
+  | _ -> None
+;;
+
+let interp1 (s:string): coms = 
+   match parser(s) with 
+   |Some e -> e
+   |_ -> Empty
+;;
+
+(*Int to String Function*)
+let rec
+nat2str(n0: int): string =
+if n0 < 10 then str(chr(n0+48))
+else string_snoc(nat2str(n0/10))(chr(n0 mod 10 + 48))
+
+let
+int2str(n0: int): string =
+if n0 >= 0 then nat2str(n0) else string_cons('-')(nat2str(-n0))
+;;
+
+let toString (const:const):string = 
+   match const with 
+   |B a ->( match a with 
+      |true -> "True"
+      |false -> "False"
+         )
+   |I b-> int2str (b)
+   |Unit -> "Unit"
+;;
+
+let listTail (list: const list ):  const list = 
+   match list with 
+      | a::b -> b 
+      |_ -> []
+;;
+(*This function return Unit but it should never have to*)
+let listHead (list: const list ):  const = 
+   match list with 
+      | a::b -> a 
+      |_ -> Unit
+;;
+
+
+let rec interp (coms:coms)(stacklist: const list) (tracelist:string list): string list =
+   match coms with
+   | Sequence(a, b) ->
+     (match a with 
+      | Push(c) -> interp b (c :: stacklist) (tracelist)
+      | Pop -> (match stacklist with 
+               |[] -> ("Panic"::tracelist)
+               |_ -> interp (b)(listTail stacklist) (tracelist))
+      |Trace -> (match stacklist with
+               |[] -> ("Panic"::tracelist)
+               |_ -> let head = listHead (stacklist) in interp (b)(Unit::(listTail stacklist))(toString head::tracelist))
+      |Add -> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | e::[] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in 
+                        let head2 = listHead (listTail stacklist) in 
+                           match head with 
+                              | I firstNum -> (match head2 with 
+                                          |I secondNum -> interp (b)((I (firstNum+secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |_ -> ("Panic"::tracelist))
+                              | _ -> ("Panic"::tracelist)))
+
+      | _ -> interp b stacklist tracelist)  (* Handle other cases if needed *)
+   | Empty -> tracelist
+   ;;
