@@ -1,5 +1,8 @@
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
 
+let ws : unit parser =
+   (many whitespace) >| ()
+
 (*
 
 Please implement the interp function following the
