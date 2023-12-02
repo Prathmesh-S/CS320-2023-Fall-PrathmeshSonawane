@@ -28,10 +28,12 @@ Programs
 *)
 
 (*Types*)
-type const = I of int | B of bool | Unit | S of string
-type com = Push of const | Pop | Trace | Add | Sub | Mul | Div | And | Or | Not | Lt | Gt | Swap | If of coms * coms | Bind | Lookup | Fun of coms | Call | Return
-type coms = Empty | Sequence of com * coms
+type s = string
+type const = I of int | B of bool | Unit | S of s | Closure of s * (s*const) list * coms
+and com = Push of const | Pop | Trace | Add | Sub | Mul | Div | And | Or | Not | Lt | Gt | Swap | If of coms * coms | Bind | Lookup | Fun of coms | Call | Return
+and coms = Empty | Sequence of com * coms
 
+type variablelist = (s * const) list
 
 
 (*Parse Integer which takes Char List*)
@@ -57,6 +59,12 @@ let symb_parser : char parser =
   let is_lowercase_letter c = ((c >= 'a' && c <= 'z') || char_isdigit c ) in
   satisfy is_lowercase_letter
 ;;
+
+(*Char Parser that will be used in Symbol Parser*)
+let char_parser : char parser =
+   let is_lowercase_letter c = ((c >= 'a' && c <= 'z')) in
+   satisfy is_lowercase_letter
+ ;;
 
 (*Symbol Integer which takes Char List*)
 let symbolparse : const parser =
@@ -199,9 +207,9 @@ let rec comParse () =
     let* _ = keyword "Return" in
         pure (Return)
     )
-;;
 
-let rec comsParse () = 
+
+and comsParse () = 
    (let* _ = ws in
    let* command = comParse () in
    (
@@ -247,6 +255,8 @@ let toString (const:const):string =
          )
    |I b-> int2str (b)
    |Unit -> "Unit"
+   |S a -> a
+   |Closure (a,b,c) -> string_append (string_append ("Fun<") (a)) (">")
 ;;
 
 let listTail (list: const list ):  const list = 
@@ -261,18 +271,40 @@ let listHead (list: const list ):  const =
       |_ -> Unit
 ;;
 
+(* Add two programs together*)
 
-let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): string list =
+let rec concatenate_coms coms1 coms2 =
+match coms1 with
+| Empty -> coms2
+| Sequence (cmd, rest) -> Sequence (cmd, concatenate_coms rest coms2)
+;;
+
+
+(*New type for variable enviornment*)
+type variablelist = (s * const) list
+
+(*Search for a symbol in the valueList *)
+let rec find_s_in_variablelist (variable_list : variablelist) (symbol : s) : const option =
+   match variable_list with
+   | [] -> None  (* Symbol not found in the list *)
+   | (s, const_value) :: rest ->
+     if s = symbol then
+       Some const_value
+     else
+       find_s_in_variablelist rest symbol
+ ;;
+
+let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list) (valueList: variablelist): string list =
    match coms with
    | Sequence(a, b) ->
      (match a with 
-      | Push(c) -> interp1 b (c :: stacklist) (tracelist)
+      | Push(c) -> interp1 b (c :: stacklist) (tracelist)(valueList)
       | Pop -> (match stacklist with 
                |[] -> ("Panic"::tracelist)
-               |_ -> interp1 (b)(listTail stacklist) (tracelist))
+               |_ -> interp1 (b)(listTail stacklist) (tracelist)(valueList))
       |Trace -> (match stacklist with
                |[] -> ("Panic"::tracelist)
-               |_ -> let head = listHead (stacklist) in interp1 (b)(Unit::(listTail stacklist))(toString head::tracelist))
+               |_ -> let head = listHead (stacklist) in interp1 (b)(Unit::(listTail stacklist))(toString head::tracelist)(valueList))
       |Add -> (match stacklist with
                | [] -> ("Panic"::tracelist)
                | e::[] -> ("Panic"::tracelist)
@@ -280,7 +312,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | I firstNum -> (match head2 with 
-                                          |I secondNum -> interp1 (b)((I (firstNum+secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |I secondNum -> interp1 (b)((I (firstNum+secondNum))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |Sub -> (match stacklist with
@@ -290,7 +322,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | I firstNum -> (match head2 with 
-                                          |I secondNum -> interp1 (b)((I (firstNum-secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |I secondNum -> interp1 (b)((I (firstNum-secondNum))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       | Mul -> (match stacklist with
@@ -300,7 +332,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | I firstNum -> (match head2 with 
-                                          |I secondNum -> interp1 (b)((I (firstNum * secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |I secondNum -> interp1 (b)((I (firstNum * secondNum))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |Div -> (match stacklist with
@@ -310,7 +342,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | I firstNum -> (match head2 with 
-                                          |I secondNum -> if (secondNum = 0) then ("Panic"::tracelist) else interp1 (b)((I (firstNum / secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |I secondNum -> if (secondNum = 0) then ("Panic"::tracelist) else interp1 (b)((I (firstNum / secondNum))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |And -> (match stacklist with
@@ -320,7 +352,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | B firstBool -> (match head2 with 
-                                          |B secondBool -> interp1 (b)((B (firstBool && secondBool))::(listTail (listTail stacklist))) (tracelist)
+                                          |B secondBool -> interp1 (b)((B (firstBool && secondBool))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |Or -> (match stacklist with
@@ -330,14 +362,14 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | B firstBool -> (match head2 with 
-                                          |B secondBool -> interp1 (b)((B (firstBool || secondBool))::(listTail (listTail stacklist))) (tracelist)
+                                          |B secondBool -> interp1 (b)((B (firstBool || secondBool))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |Not -> (match stacklist with
                |[] -> ("Panic"::tracelist)
                |_ -> let head = listHead (stacklist) in 
                   match head with
-                     |B boolean -> if (boolean = true) then interp1 (b)(B false::listTail stacklist) (tracelist) else interp1 (b)(B true::listTail stacklist) (tracelist)
+                     |B boolean -> if (boolean = true) then interp1 (b)(B false::listTail stacklist) (tracelist) (valueList) else interp1 (b)(B true::listTail stacklist) (tracelist)(valueList)
                      |_ -> ("Panic"::tracelist))
       |Lt -> (match stacklist with
                | [] -> ("Panic"::tracelist)
@@ -346,7 +378,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | I firstNum -> (match head2 with 
-                                          |I secondNum -> interp1 (b)((B (firstNum < secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |I secondNum -> interp1 (b)((B (firstNum < secondNum))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |Gt -> (match stacklist with
@@ -356,9 +388,37 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
                         let head2 = listHead (listTail stacklist) in 
                            match head with 
                               | I firstNum -> (match head2 with 
-                                          |I secondNum -> interp1 (b)((B (firstNum > secondNum))::(listTail (listTail stacklist))) (tracelist)
+                                          |I secondNum -> interp1 (b)((B (firstNum > secondNum))::(listTail (listTail stacklist))) (tracelist)(valueList)
                                           |_ -> ("Panic"::tracelist))
+                              | _ -> ("Panic"::tracelist)))
+      |If (branch1,branch2) ->  (match stacklist with 
+               |[] -> ("Panic"::tracelist)
+               |_ -> let head = listHead (stacklist) in 
+                        match head with
+                           |B boolean -> if (boolean = true) then interp1 (concatenate_coms branch1 b)(listTail stacklist)(tracelist)(valueList) else interp1 (concatenate_coms branch2 b)(listTail stacklist)(tracelist)(valueList)
+                           |_ -> ("Panic"::tracelist))
+      |Bind -> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | e::[] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in 
+                        let head2 = listHead (listTail stacklist) in 
+                           (match head with 
+                              | S firstSymbol -> interp1 (b)((listTail (listTail stacklist))) (tracelist)((toString head,head2)::valueList)
                               | _ -> ("Panic"::tracelist))))
+      |Lookup -> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in  
+                           match head with 
+                              | S symbol -> (match find_s_in_variablelist valueList symbol with
+                                             |Some value -> interp1 (b)(value::listTail stacklist) (tracelist)(valueList)
+                                             |_ -> ("Panic"::tracelist))
+                              | _ -> ("Panic"::tracelist)))
+      |Swap -> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | e::[] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in 
+                        let head2 = listHead (listTail stacklist) in 
+                            interp1 (b)((head2::head::(listTail (listTail stacklist)))) (tracelist)(valueList))))
    | Empty -> tracelist
    ;;
 
@@ -368,6 +428,6 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list): stri
 
 let interp (s : string) : string list option = 
    match string_parse (comsParse()) s with
-   | Some (e, []) -> Some (interp1 e [] [])
+   | Some (e, []) -> Some (interp1 e [] [] [])
    | _ -> None
 ;;
