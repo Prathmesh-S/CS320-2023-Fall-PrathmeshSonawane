@@ -17,12 +17,11 @@ Constants
 ⟨digit⟩::= 0|1|2|3|4|5|6|7|8|9 
 ⟨nat⟩ ::= ⟨digit⟩ | ⟨digit⟩⟨nat⟩
 ⟨int⟩ ::= ⟨nat⟩ | -⟨nat⟩
-⟨char⟩ ::= a|...|z
 ⟨bool⟩ ::= True | False
 ⟨const⟩ ::= ⟨int⟩ | ⟨bool⟩ | Unit
 
 Programs
-⟨prog⟩ ::= ⟨coms⟩i
+⟨prog⟩ ::= ⟨coms⟩
 ⟨com⟩ ::= Push ⟨const⟩|Pop|Trace|Add|Sub|Mul|Div|And|Or|Not|Lt|Gt
 ⟨coms⟩ ::= ε | ⟨com⟩; ⟨coms⟩
 
@@ -30,8 +29,9 @@ Programs
 
 (*Types*)
 type const = I of int | B of bool | Unit | S of string
-type com = Push of const | Pop | Trace | Add | Sub | Mul | Div | And | Or | Not | Lt | Gt
+type com = Push of const | Pop | Trace | Add | Sub | Mul | Div | And | Or | Not | Lt | Gt | Swap | If of coms * coms | Bind | Lookup | Fun of coms | Call | Return
 type coms = Empty | Sequence of com * coms
+
 
 
 (*Parse Integer which takes Char List*)
@@ -41,23 +41,6 @@ let integer : const parser =
    <|>
      (let* x = natural in pure (I x))
 ;;
-
-(*Char Parser that will be used in Symbol Parser*)
-let symb_parser : char parser =
-   let is_lowercase_letter c = ((c >= 'a' && c <= 'z') || char_isdigit c ) in
-   satisfy is_lowercase_letter
- ;;
-
-(*Symbol Integer which takes Char List*)
-let symbolparse : const parser =
-   let* firstChar = char_parser in 
-   let* rest = many symb_parser in
-   let rec string_flat list = match list with 
-                           |[] -> ""
-                           |a::b -> string_append (string_cons a "")(string_flat b) in
-   pure (S (string_append (string_cons firstChar "") (string_flat rest)))
- ;;
-
 (* Boolean Parse which takes Char List*)
 let boolean :  const parser =
    (let* x = keyword "True" in pure (B true))
@@ -68,11 +51,27 @@ let boolean :  const parser =
 let unitparse :  const parser =
    (let* x = keyword "Unit" in pure (Unit))
 ;;
+
+(*Char Parser that will be used in Symbol Parser*)
+let symb_parser : char parser =
+  let is_lowercase_letter c = ((c >= 'a' && c <= 'z') || char_isdigit c ) in
+  satisfy is_lowercase_letter
+;;
+
+(*Symbol Integer which takes Char List*)
+let symbolparse : const parser =
+  let* firstChar = char_parser in 
+  let* rest = many symb_parser in
+  let rec string_flat list = match list with 
+                          |[] -> ""
+                          |a::b -> string_append (string_cons a "")(string_flat b) in
+  pure (S (string_append (string_cons firstChar "") (string_flat rest)))
+;;
+
 (* Parse a const value*)
 let constFun: const parser = 
 integer<|>boolean<|>unitparse<|>symbolparse
 ;;
-
 let rec comParse () =
    (let* _ = ws in
     let* _ = keyword "Push" in
@@ -146,6 +145,60 @@ let rec comParse () =
    let* _ = keyword "Gt" in
      pure (Gt)
    )
+   <|>
+   (
+   let* _ = ws in
+   let* _ = keyword "Swap" in
+      pure (Swap)
+   )
+   <|>
+   (let* _ = ws in
+    let* _ = keyword "If" in
+    let* _ = ws in
+    let* first = comsParse () in
+    let* _ = ws in
+    let* _ = keyword "Else" in
+    let* _ = ws in
+    let* second = comsParse () in
+    let* _ = ws in
+    let* _ = keyword "End" in
+    let* _ = ws in
+    pure (If (first, second))
+    )
+    <|>
+    (
+    let* _ = ws in
+    let* _ = keyword "Bind" in
+        pure (Bind)
+    )
+    <|>
+    (
+    let* _ = ws in
+    let* _ = keyword "Lookup" in
+        pure (Lookup)
+    )
+    <|>
+   (let* _ = ws in
+    let* _ = keyword "Fun" in
+    let* _ = ws in
+    let* first = comsParse () in
+    let* _ = ws in
+    let* _ = keyword "End" in
+    let* _ = ws in
+    pure (Fun first)
+    )
+    <|>
+    (
+    let* _ = ws in
+    let* _ = keyword "Call" in
+        pure (Call)
+    )
+    <|>
+    (
+    let* _ = ws in
+    let* _ = keyword "Return" in
+        pure (Return)
+    )
 ;;
 
 let rec comsParse () = 
