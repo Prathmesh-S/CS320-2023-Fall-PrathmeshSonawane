@@ -413,6 +413,28 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list) (valu
                                              |Some value -> interp1 (b)(value::listTail stacklist) (tracelist)(valueList)
                                              |_ -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
+      |Fun (content)-> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in  
+                           match head with 
+                              | S symbol -> interp1 (b)(Closure (symbol,valueList,content)::listTail stacklist) (tracelist)(valueList)
+                              | _ -> ("Panic"::tracelist)))
+      |Call -> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | e::[] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in 
+                        let head2 = listHead (listTail stacklist) in 
+                           (match head with 
+                              | Closure (f1,v1,c1) -> interp1 (c1)(head2::(Closure ("cc",valueList,b)::(listTail (listTail stacklist)))) (tracelist)((f1,head)::valueList)
+                              | _ -> ("Panic"::tracelist))))
+      |Return -> (match stacklist with
+               | [] -> ("Panic"::tracelist)
+               | e::[] -> ("Panic"::tracelist)
+               | _ -> (let head = listHead (stacklist) in 
+                        let head2 = listHead (listTail stacklist) in 
+                           (match head with 
+                              | Closure (f1,v1,c1) -> interp1 (c1)(head2::(listTail (listTail stacklist))) (tracelist)(v1)
+                              | _ -> ("Panic"::tracelist))))
       |Swap -> (match stacklist with
                | [] -> ("Panic"::tracelist)
                | e::[] -> ("Panic"::tracelist)
