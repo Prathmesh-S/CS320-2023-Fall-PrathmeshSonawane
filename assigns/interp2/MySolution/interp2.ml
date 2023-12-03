@@ -294,6 +294,16 @@ let rec find_s_in_variablelist (variable_list : variablelist) (symbol : s) : con
        find_s_in_variablelist rest symbol
  ;;
 
+(*Print valueList 
+let string_of_variablelist (variableList : variablelist) : string =
+   let string_of_binding (symbol, value) =
+     Printf.sprintf "(%s, %s)" symbol (toString value)
+   in
+   let bindings_str = List.map string_of_binding variableList in
+   "[" ^ String.concat "; " bindings_str ^ "]"
+ ;;
+for debugging*)
+
 let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list) (valueList: variablelist): string list =
    match coms with
    | Sequence(a, b) ->
@@ -410,8 +420,8 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list) (valu
                | _ -> (let head = listHead (stacklist) in  
                            match head with 
                               | S symbol -> (match find_s_in_variablelist valueList symbol with
-                                             |Some value -> interp1 (b)(value::listTail stacklist) (tracelist)(valueList)
-                                             |_ -> ("Panic"::tracelist))
+                                             |Some value -> (interp1 (b)(value::listTail stacklist) (tracelist)(valueList))
+                                             |None -> ("Panic"::tracelist))
                               | _ -> ("Panic"::tracelist)))
       |Fun (content)-> (match stacklist with
                | [] -> ("Panic"::tracelist)
@@ -425,7 +435,7 @@ let rec interp1 (coms:coms)(stacklist: const list) (tracelist:string list) (valu
                | _ -> (let head = listHead (stacklist) in 
                         let head2 = listHead (listTail stacklist) in 
                            (match head with 
-                              | Closure (f1,v1,c1) -> interp1 (c1)(head2::(Closure ("cc",valueList,b)::(listTail (listTail stacklist)))) (tracelist)((f1,head)::valueList)
+                              | Closure (f1,v1,c1) -> interp1 (c1)(head2::(Closure ("cc",valueList,b)::(listTail (listTail stacklist)))) (tracelist)((f1,head)::v1)
                               | _ -> ("Panic"::tracelist))))
       |Return -> (match stacklist with
                | [] -> ("Panic"::tracelist)
