@@ -1,4 +1,5 @@
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
+#use "./../../interp2/Solution/interp2.ml";;
 
 (*
 
@@ -328,4 +329,64 @@ let parse_prog (s : string) : expr =
   | Some (m, []) -> scope_expr m
   | _ -> raise SyntaxError
 
-let compile (s : string) : string = (* YOUR CODE *)
+
+  (*The code below is mine*)
+
+(*Int to String Function*)
+let rec
+nat2str(n0: int): string =
+if n0 < 10 then str(chr(n0+48))
+else string_snoc(nat2str(n0/10))(chr(n0 mod 10 + 48))
+
+(*Bool to String Functions*)
+
+let boolToString(x:bool):string = 
+match x with
+  | true -> "True"
+  | false -> "False"
+
+let
+int2str(n0: int): string =
+if n0 >= 0 then nat2str(n0) else string_cons('-')(nat2str(-n0))
+;;
+
+
+(*
+let compile (s : string) : string = 
+  match string_parse (whitespaces >> parse_expr ()) s with
+  | Some (m, []) -> match scope_expr m with 
+                      |Int x -> "Push " ^ int2str (x) ^ ";"
+                      |Bool x -> "Push " ^ boolToString (x) ^ ";" (*Works with lowercase true/false*)
+                      |Unit -> "Push Unit" ^ ";"
+                      |Fun(a,b,c) -> "Push " ^ a ^ "; Push " ^ b  ^ ";" (*Fix This*)
+                      |UOpr(Neg, Int a) -> "Push " ^ int2str a ^ "; Push -1; Mul" ^ ";"
+                      |UOpr(Neg, anExpression) -> "-" ^ compile (anExpression)
+  | _ -> raise SyntaxError
+;;
+*)
+
+let alltoString(x:coms) = 
+"Edit"
+;;
+
+let rec compile1 (tree: expr) : coms = 
+  match tree with 
+            |Int x -> [Push (Int x);]
+            |Bool x -> [Push (Bool x);]
+            |Unit -> [Push (Unit);]
+            |Var x -> [Push (Sym x);]
+            |UOpr(Neg, expression) -> compile1 expression @ [Push (Int (-1)); Mul;]
+            |UOpr(Not, expression) -> compile1 expression @ [Not;]
+            |BOpr(Add, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Add;]
+            |BOpr(Sub, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Sub;]
+            |BOpr(Mul, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Mul;]
+            |BOpr(Div, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Div;]
+            |BOpr(Mod, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ compile1 expr1 @ compile1 expr2 @ [Swap;Div;Mul;Swap;Sub;]
+;;
+
+let compile (s : string) : string = 
+  match string_parse (whitespaces >> parse_expr ()) s with
+  | Some (m, []) -> let parseTree = (scope_expr m) in 
+                        alltoString(compile1(parseTree))
+  | _ -> raise SyntaxError
+;;
