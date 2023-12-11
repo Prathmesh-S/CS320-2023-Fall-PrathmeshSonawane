@@ -366,15 +366,61 @@ let compile (s : string) : string =
 *)
 
 let alltoString(x:coms) = 
-"Edit"
+  "yeah"
 ;;
+
+let rec const_to_string (c:const) =
+  match c with
+  | Int i -> int2str i
+  | Bool b -> boolToString b
+  | Unit -> "unit"
+  | Sym s -> s
+
+and value_to_string v =
+  match v with
+  | VInt i -> int2str i
+  | VBool b -> boolToString b
+  | VUnit -> "unit"
+  | VSym s -> s
+  | VClo (param, _, coms) -> "fun " ^ param ^ " -> " ^ (toString coms)
+
+and com_to_string c =
+  match c with
+  | Push con -> "Push(" ^ (const_to_string con) ^ ")"
+  | Pop -> "Pop"
+  | Swap -> "Swap"
+  | Trace1 -> "Trace1"
+  | Add -> "Add"
+  | Sub -> "Sub"
+  | Mul -> "Mul"
+  | Div -> "Div"
+  | And -> "And"
+  | Or -> "Or"
+  | Not -> "Not"
+  | Lt -> "Lt"
+  | Gt -> "Gt"
+  | IfThenElse (c1, c2) -> "IfThenElse(" ^ (toString c1) ^ ", " ^ (toString c2) ^ ")"
+  | Bind -> "Bind"
+  | Lookup -> "Lookup"
+  | Fun c -> "Fun(" ^ (toString c) ^ ")"
+  | Call -> "Call"
+  | Ret -> "Ret"
+
+and toString coms =
+  let rec toStringAcc acc coms =
+    match coms with
+    | [] -> acc
+    | [c] -> acc ^ com_to_string c
+    | c :: rest -> toStringAcc (acc ^ com_to_string c ^ "; ") rest
+  in
+  "[" ^ (toStringAcc "" coms) ^ "]"
 
 let rec compile1 (tree: expr) : coms = 
   match tree with 
             |Int x -> [Push (Int x);]
             |Bool x -> [Push (Bool x);]
             |Unit -> [Push (Unit);]
-            |Var x -> [Push (Sym x);]
+            |Var x -> [Push (Sym x);Lookup;]
             |UOpr(Neg, expression) -> compile1 expression @ [Push (Int (-1)); Mul;]
             |UOpr(Not, expression) -> compile1 expression @ [Not;]
             |BOpr(Add, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Add;]
@@ -382,6 +428,19 @@ let rec compile1 (tree: expr) : coms =
             |BOpr(Mul, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Mul;]
             |BOpr(Div, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Div;]
             |BOpr(Mod, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ compile1 expr1 @ compile1 expr2 @ [Swap;Div;Mul;Swap;Sub;]
+            |BOpr(And, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [And;]
+            |BOpr(Or, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Or;]
+            |BOpr(Lt, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Lt;]
+            |BOpr(Gt, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Gt;]
+            |BOpr(Lte, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Gt;Not;]
+            |BOpr(Gte, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Lt;Not;]
+            |BOpr(Eq, expr1, expr2) -> compile1 expr1 @ compile1 expr2 @ [Swap;Lt;Not;] @ compile1 expr1 @ compile1 expr2 @ [Swap;Gt;Not;And]
+            |Let (a, expr1, expr2) ->  compile1 expr1 @ [Push (Sym a);Bind;] @ compile1 expr2
+            |Fun(a, b, expr) -> let arg = [Push (Sym b); Bind;] @ (compile1 expr) @ [Swap; Ret;] in [Push (Sym a); Fun (arg);] (*Or use Return*)
+            |App(expr1, expr2) -> (compile1 expr1) @ (compile1 expr2) @ [Swap; Call;]
+            |Seq(expr1, expr2) -> compile1 expr1 @ compile1 expr2
+            |Ifte(expr1, expr2, expr3) -> compile1 expr1 @ [IfThenElse(compile1 expr2, compile1 expr3);]
+            |Trace (expr1) -> compile1 expr1 @ [Trace1;Pop;]
 ;;
 
 let compile (s : string) : string = 
