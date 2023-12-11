@@ -1,5 +1,5 @@
 #use "./../../../classlib/OCaml/MyOCaml.ml";;
-#use "./../../interp2/Solution/interp2.ml";;
+#use "./interp2.ml";;
 
 (*
 
@@ -369,7 +369,7 @@ let alltoString(x:coms) =
   "yeah"
 ;;
 
-let rec const_to_string (c:const) =
+let rec const_to_string (c: const) =
   match c with
   | Int i -> int2str i
   | Bool b -> boolToString b
@@ -386,10 +386,10 @@ and value_to_string v =
 
 and com_to_string c =
   match c with
-  | Push con -> "Push(" ^ (const_to_string con) ^ ")"
+  | Push con -> "Push " ^ (const_to_string con)
   | Pop -> "Pop"
   | Swap -> "Swap"
-  | Trace1 -> "Trace1"
+  | Trace1 -> "Trace"
   | Add -> "Add"
   | Sub -> "Sub"
   | Mul -> "Mul"
@@ -399,21 +399,25 @@ and com_to_string c =
   | Not -> "Not"
   | Lt -> "Lt"
   | Gt -> "Gt"
-  | IfThenElse (c1, c2) -> "IfThenElse(" ^ (toString c1) ^ ", " ^ (toString c2) ^ ")"
+  | IfThenElse (c1, c2) -> "If " ^ (toString c1) ^ " Else " ^ (toString c2) ^ " End"
   | Bind -> "Bind"
   | Lookup -> "Lookup"
-  | Fun c -> "Fun(" ^ (toString c) ^ ")"
+  | Fun c -> "Fun " ^ (toString c) ^ " End"
   | Call -> "Call"
-  | Ret -> "Ret"
+  | Ret -> "Return"
 
-and toString coms =
-  let rec toStringAcc acc coms =
+and coms_to_string coms =
+  let rec coms_to_string_acc acc coms =
     match coms with
     | [] -> acc
     | [c] -> acc ^ com_to_string c
-    | c :: rest -> toStringAcc (acc ^ com_to_string c ^ "; ") rest
+    | c :: rest -> coms_to_string_acc (acc ^ com_to_string c ^ "; ") rest
   in
-  "[" ^ (toStringAcc "" coms) ^ "]"
+   (coms_to_string_acc "" coms)
+
+and toString coms =
+  (coms_to_string coms) ^ ";"
+;;
 
 let rec compile1 (tree: expr) : coms = 
   match tree with 
