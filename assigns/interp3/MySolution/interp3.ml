@@ -446,6 +446,6 @@ let rec compile1 (tree: expr) : coms =
 let compile (s : string) : string = 
   match string_parse (whitespaces >> parse_expr ()) s with
   | Some (m, []) -> let parseTree = (scope_expr m) in 
-                        alltoString(compile1(parseTree))
+                        toString(compile1(parseTree))
   | _ -> raise SyntaxError
 ;;
