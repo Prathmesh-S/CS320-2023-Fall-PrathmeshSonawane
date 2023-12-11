@@ -28,11 +28,11 @@ type value =
   | VClo of string * env * coms
 
 and com =
-  | Push of const | Pop | Swap | Trace
+  | Push of const | Pop | Swap | Trace1
   | Add | Sub | Mul | Div
   | And | Or | Not
   | Lt | Gt
-  | Ifte of coms * coms 
+  | IfThenElse of coms * coms 
   | Bind | Lookup
   | Fun of coms | Call | Ret
 
@@ -76,7 +76,7 @@ let rec parse_com () =
   (keyword "Push" >> parse_const >>= fun c -> pure (Push c)) <|>
   (keyword "Pop" >> pure Pop) <|>
   (keyword "Swap" >> pure Swap) <|>
-  (keyword "Trace" >> pure Trace) <|>
+  (keyword "Trace1" >> pure Trace1) <|>
   (keyword "Add" >> pure Add) <|>
   (keyword "Sub" >> pure Sub) <|>
   (keyword "Mul" >> pure Mul) <|>
@@ -86,7 +86,7 @@ let rec parse_com () =
   (keyword "Not" >> pure Not) <|>
   (keyword "Lt" >> pure Lt) <|>
   (keyword "Gt" >> pure Gt) <|>
-  parse_ifte () <|>
+  parse_IfThenElse () <|>
   (keyword "Bind" >> pure Bind) <|>
   (keyword "Lookup" >> pure Lookup) <|>
   parse_fun () <|>
@@ -96,13 +96,13 @@ let rec parse_com () =
 and parse_coms () = 
   many' (fun x -> parse_com x << keyword ";")
 
-and parse_ifte () =
+and parse_IfThenElse () =
   let* _ = keyword "If" in
   let* coms1 = parse_coms () in
   let* _ = keyword "Else" in
   let* coms2 = parse_coms () in
   let* _ = keyword "End" in
-  pure (Ifte (coms1, coms2))
+  pure (IfThenElse (coms1, coms2))
 
 and parse_fun () =
   let* _ = keyword "Fun" in
@@ -165,7 +165,7 @@ let rec eval (s : stack) (t : trace) (e : env) (p : coms) : trace =
      | c1 :: c2 :: s0 (* SwapStack *)  -> eval (c2 :: c1 :: s0) t e p0
      | _ :: s0        (* SwapError1 *) -> eval [] ("Panic" :: t) e []
      | []             (* SwapError2 *) -> eval [] ("Panic" :: t) e [])
-  | Trace :: p0 ->
+  | Trace1 :: p0 ->
     (match s with
      | c :: s0 (* TraceStack *) -> eval (VUnit :: s0) (toString c :: t) e p0
      | []      (* TraceError *) -> eval [] ("Panic" :: t) e [])
@@ -223,7 +223,7 @@ let rec eval (s : stack) (t : trace) (e : env) (p : coms) : trace =
      | _ :: _ :: s0           (* GtError1 *) -> eval [] ("Panic" :: t) e []
      | []                     (* GtError2 *) -> eval [] ("Panic" :: t) e []
      | _ :: []                (* GtError3 *) -> eval [] ("Panic" :: t) e [])
-  | Ifte (coms1, coms2) :: p0 ->
+  | IfThenElse (coms1, coms2) :: p0 ->
     (match s with
      | VBool true  :: s0 (* ThenStack *)    -> eval s0 t e (list_append coms1 p0)
      | VBool false :: s0 (* ElseStack *)    -> eval s0 t e (list_append coms2 p0)
